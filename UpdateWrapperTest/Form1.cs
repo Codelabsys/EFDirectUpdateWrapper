@@ -23,11 +23,13 @@ namespace UpdateWrapperTest
 
         private void button1_Click(object sender, EventArgs e)
         {
+            
+
             BookLibraryEntities context = new BookLibraryEntities();
             Book bk = new Book() { ID = 1 };
-            EntityUpdateWrapper<Book> wrp = new EntityUpdateWrapper<Book>(bk, context, context.Books);
-            wrp.Update<string>(b => b.Author, "New Auther");
-            //wrp.Save();
+            context.PrepareEntityForUpdate(bk, context.Books);
+            bk.Author = "Mohamed";
+            context.SaveChanges(DirectUpdateMode.AllowAll);
         }
     }
 

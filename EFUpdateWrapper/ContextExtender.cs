@@ -12,12 +12,13 @@ using System.Threading.Tasks;
 
 namespace CodeLab.Assets.EFUpdateWrapper
 {
-
     public static class ContextExtender
     {
         public static int SaveChanges(this DbContext context ,DirectUpdateMode updatemode = DirectUpdateMode.PerEntity)
         {
-            IDirectUpdateContext directContext = context as IDirectUpdateContext;
+
+           
+                IDirectUpdateContext directContext = context as IDirectUpdateContext;
 
             if (directContext != null)
             {
@@ -45,7 +46,20 @@ namespace CodeLab.Assets.EFUpdateWrapper
             
         }
 
-        public static bool GetLoadedEntityIfAny<TEntity>(this DbContext context, ref TEntity entity)
+        public static void PrepareEntityForUpdate<TEntity>(this DbContext context, TEntity entity ,DbSet<TEntity> dbEntitySet)
+           where TEntity : class, new()
+        {
+      
+            if (!context.GetLoadedEntityIfAny(ref entity))
+            {
+                //now safe to attach since it is either not loaded , or detached
+                dbEntitySet.Attach(entity);
+                DbEntityEntry<TEntity> entry = context.Entry(entity);
+                entry.State = EntityState.Unchanged;
+            }
+        }
+
+        private static bool GetLoadedEntityIfAny<TEntity>(this DbContext context, ref TEntity entity)
             where TEntity : class
         {
             ObjectStateEntry entry;
@@ -94,7 +108,7 @@ namespace CodeLab.Assets.EFUpdateWrapper
                     }
                     else
                     {
-                        canDoDirectUpdate = (mode.Value == DirectUpdateMode.AllowAll);
+                        canDoDirectUpdate = true;
                     }
 
                     if (canDoDirectUpdate)
@@ -124,7 +138,7 @@ namespace CodeLab.Assets.EFUpdateWrapper
             return result;
         }
 
-        public static string GetEntitySetName<T>(this DbContext context)
+        private static string GetEntitySetName<T>(this DbContext context)
          where T : class
         {
             string className = typeof(T).Name;

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -21,7 +23,7 @@ namespace EFDefaultUpdate
         {
             BookLibraryEntities ctx = new BookLibraryEntities();
             Book b = ctx.Books.First(bk => bk.ID == 1);
-            b.Author = "My Updated Author";
+            b.Author = "My Updsgdsgsdfated Aasdasduthor";
             ctx.SaveChanges();
 
             //=========================
@@ -29,6 +31,7 @@ namespace EFDefaultUpdate
 
         }
 
+       
         private void button2_Click(object sender, EventArgs e)
         {
            
@@ -38,7 +41,27 @@ namespace EFDefaultUpdate
                 Book b = new Book();
                 b.ID = 1;
                 ctx.Books.Attach(b);
+
+                DbEntityEntry entry = ctx.Entry(b);
+                var allProps = entry.CurrentValues.PropertyNames;
+                entry.Property("ID").IsModified = false;
+                entry.Property("Name").IsModified = false;
+                entry.Property("Author").IsModified = false;
+                entry.Property("Category").IsModified = false;
+              
+                entry.State = EntityState.Unchanged;
                 b.Author = "My Updated Author2";
+
+                ctx.ChangeTracker.DetectChanges();
+
+                entry.Property("ID").IsModified = false;
+                entry.Property("Name").IsModified = false;
+                //entry.Property("Author").IsModified = false;
+                entry.Property("Category").IsModified = false;
+
+                //entry.Property("Author").IsModified = true;
+                //entry.State = EntityState.Modified;
+                
                 ctx.SaveChanges();
 
 
