@@ -3,7 +3,7 @@
     public enum DirectUpdateMode
     {
         PreventAll,
-        AllowAll,
-        PerEntity
+        AllowAll
+        
     }
 }

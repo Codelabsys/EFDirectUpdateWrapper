@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CodeLab.Assets.EFUpdateWrapper</RootNamespace>
     <AssemblyName>CodeLab.Assets.EFUpdateWrapper</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -51,7 +51,6 @@
     <Compile Include="DirectUpdateMode.cs" />
     <Compile Include="ContextExtender.cs" />
     <Compile Include="IDirectUpdateContext.cs" />
-    <Compile Include="IUpdatableEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

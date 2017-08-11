@@ -22,8 +22,7 @@ namespace EFDefaultUpdate
         private void button1_Click(object sender, EventArgs e)
         {
             BookLibraryEntities ctx = new BookLibraryEntities();
-            Book b = ctx.Books.First(bk => bk.ID == 1);
-            b.Author = "My Updsgdsgsdfated Aasdasduthor";
+            
             ctx.SaveChanges();
 
             //=========================

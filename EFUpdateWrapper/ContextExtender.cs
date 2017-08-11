@@ -14,7 +14,7 @@ namespace CodeLab.Assets.EFUpdateWrapper
 {
     public static class ContextExtender
     {
-        public static int SaveChanges(this DbContext context ,DirectUpdateMode updatemode = DirectUpdateMode.PerEntity)
+        public static int SaveChanges(this DbContext context ,DirectUpdateMode updatemode)
         {
 
            
@@ -23,21 +23,6 @@ namespace CodeLab.Assets.EFUpdateWrapper
             if (directContext != null)
             {
                 directContext.CurrentSaveOperationMode = updatemode;
-                IEnumerable<DbEntityEntry> allEntries = context.ChangeTracker.Entries();
-                if (updatemode != DirectUpdateMode.PerEntity)
-                {
-                    bool allow = true;
-                    if (updatemode == DirectUpdateMode.AllowAll)
-                        allow = true;
-                    if (updatemode == DirectUpdateMode.PreventAll)
-                        allow = false;
-                    foreach (DbEntityEntry entry in allEntries)
-                    {
-                        IUpdatableEntity updatableEntity = entry.Entity as IUpdatableEntity;
-                        if (updatableEntity != null)
-                            updatableEntity.AllowDirectUpdate = allow;
-                    }
-                }
 
             }
 
@@ -55,7 +40,7 @@ namespace CodeLab.Assets.EFUpdateWrapper
                 //now safe to attach since it is either not loaded , or detached
                 dbEntitySet.Attach(entity);
                 DbEntityEntry<TEntity> entry = context.Entry(entity);
-                entry.State = EntityState.Unchanged;
+              //  entry.State = EntityState.Unchanged;
             }
         }
 
@@ -89,7 +74,7 @@ namespace CodeLab.Assets.EFUpdateWrapper
         }
 
         public static DbEntityValidationResult RemoveEFFalseAlarms(this DbContext context, DbEntityValidationResult result,
-            DbEntityEntry entityEntry, IDictionary<object, object> items)
+            DbEntityEntry entityEntry) // itemss????????????????
         {
 
             IDirectUpdateContext directContext = context as IDirectUpdateContext;
@@ -98,40 +83,27 @@ namespace CodeLab.Assets.EFUpdateWrapper
             {
                 DirectUpdateMode? mode = directContext.CurrentSaveOperationMode;
 
-                if (mode.HasValue && mode.Value != DirectUpdateMode.PreventAll)
+                if (mode.HasValue && mode.Value == DirectUpdateMode.AllowAll)
                 {
-                    bool canDoDirectUpdate = false;
-                    IUpdatableEntity entityAsUpdatable = entityEntry.Entity as IUpdatableEntity;
-                    if (entityAsUpdatable != null)
+                   
+                    List<DbValidationError> errorsToIgnore = new List<DbValidationError>();
+                    foreach (DbValidationError error in result.ValidationErrors)
                     {
-                        canDoDirectUpdate = entityAsUpdatable.AllowDirectUpdate;
-                    }
-                    else
-                    {
-                        canDoDirectUpdate = true;
-                    }
-
-                    if (canDoDirectUpdate)
-                    {
-                        List<DbValidationError> errorsToIgnore = new List<DbValidationError>();
-                        foreach (DbValidationError error in result.ValidationErrors)
+                        if (entityEntry.State == EntityState.Modified)
                         {
-                            if (entityEntry.State == EntityState.Modified)
+                            DbMemberEntry member = entityEntry.Member(error.PropertyName);
+                            DbPropertyEntry property = member as DbPropertyEntry;
+                            if (property != null)
                             {
-                                DbMemberEntry member = entityEntry.Member(error.PropertyName);
-                                DbPropertyEntry property = member as DbPropertyEntry;
-                                if (property != null)
+                                if (!property.IsModified)
                                 {
-                                    if (!property.IsModified)
-                                    {
-                                        errorsToIgnore.Add(error);
-                                    }
+                                    errorsToIgnore.Add(error);
                                 }
                             }
                         }
-
-                        errorsToIgnore.ForEach(e => result.ValidationErrors.Remove(e));
                     }
+
+                    errorsToIgnore.ForEach(e => result.ValidationErrors.Remove(e));
                 }
             }
 
